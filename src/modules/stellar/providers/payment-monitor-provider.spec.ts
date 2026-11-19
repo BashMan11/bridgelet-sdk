@@ -552,6 +552,39 @@ describe('PaymentMonitorProvider', () => {
       service.watch(makeAccount());
     });
 
+    it('processes the matching payment after more than one page worth of earlier events', async () => {
+      for (let pagingToken = 1000; pagingToken < 1200; pagingToken++) {
+        capturedOnMessage!(
+          makePaymentRecord({
+            paging_token: String(pagingToken),
+            amount: '0.0000010',
+          }),
+        );
+      }
+
+      capturedOnMessage!(
+        makePaymentRecord({
+          paging_token: '1200',
+          amount: '100.0000000',
+        }),
+      );
+      await new Promise(setImmediate);
+
+      expect(stellarService.recordPayment).toHaveBeenCalledTimes(1);
+      expect(stellarService.recordPayment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          contractId: 'CONTRACT123',
+          signerSecret: 'SFUNDING_SECRET',
+          amount: 1_000_000_000n,
+        }),
+      );
+      expect(accountsRepo.update).toHaveBeenCalledWith(
+        { id: 'acc-uuid-1', status: AccountStatus.PENDING_PAYMENT },
+        { status: AccountStatus.PENDING_CLAIM },
+      );
+      expect(mockCloseStream).toHaveBeenCalledTimes(1);
+    });
+
     it('processes sequence of payments with paging tokens when an account receives multiple payments before expected one', async () => {
       // First event: non-payment operation with earlier paging token
       capturedOnMessage!({
