@@ -968,6 +968,7 @@ describe('TransactionProvider', () => {
       );
       expect(mockTransactionSetTimeout).toHaveBeenCalledWith(30);
       expect(mockTransactionSign).toHaveBeenCalledWith(mockKeypair);
+      expect(mockPaymentOperation).not.toHaveBeenCalled();
       expect(result.hash).toBe('merge-hash-123');
       expect(result.successful).toBe(true);
     });
