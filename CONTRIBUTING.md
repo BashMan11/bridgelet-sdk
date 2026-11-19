@@ -2,6 +2,9 @@
 
 Thank you for contributing to the Bridgelet SDK! Please follow these guidelines to ensure a smooth review process.
 
+Thank you for contributing to the Bridgelet SDK! Please follow these guidelines to ensure a smooth review process.
+
+
 # Contributing
 
 ## Automated PR Naming Checks
