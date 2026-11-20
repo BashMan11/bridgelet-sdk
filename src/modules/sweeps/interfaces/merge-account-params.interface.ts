@@ -14,9 +14,18 @@
  *
  * ## Coverage
  *
- * Covered by `transaction.provider.spec.ts` - see the `mergeAccount` and
+ * Transaction construction and failure handling are covered by
+ * `transaction.provider.spec.ts` - see the `mergeAccount` and
  * `mergeAccount - Edge Cases` blocks (success, self-merge rejection, Horizon
  * failures, network errors, and the sweep-then-merge workflow).
+ *
+ * The live orchestration is covered by
+ * `account-reclamation.provider.spec.ts` (claimed and expired accounts,
+ * trustline removal/refund ordering, retries, and already-merged recovery).
+ *
+ * `contract.provider.spec.ts` does not exercise account merge: the contract
+ * provider only signs and submits the Soroban sweep authorization. It never
+ * constructs or submits classic `AccountMerge` transactions.
  *
  * Verified for #708 (duplicate of the already-resolved #647, fixed in PR #781).
  *

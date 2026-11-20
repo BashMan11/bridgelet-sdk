@@ -247,6 +247,7 @@ describe('AccountReclamationProvider', () => {
             outcome: 'claimed',
             alreadyMerged: false,
             mergeTxHash: 'merge-hash',
+            reserveReclaimed: true,
           }),
         }),
       );
