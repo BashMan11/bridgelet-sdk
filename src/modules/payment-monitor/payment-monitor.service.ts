@@ -119,6 +119,7 @@ export class PaymentMonitorService implements OnModuleInit, OnModuleDestroy {
     const now = new Date();
     const accounts = await this.accountsRepository.find({
       where: {
+        // #946: only monitor unexpired pending-payment accounts.
         status: AccountStatus.PENDING_PAYMENT,
         expiresAt: MoreThan(now),
       },
@@ -137,6 +138,9 @@ export class PaymentMonitorService implements OnModuleInit, OnModuleDestroy {
 
   private async pollAccount(account: Account): Promise<void> {
     try {
+      // #946: defensive guard in case an expired account slips into a tick.
+      if (account.expiresAt <= new Date()) return;
+
       const payment = await this.findInboundPayment(account);
       if (!payment) return;
 
