@@ -24,7 +24,7 @@ export class JwtAuthGuard implements CanActivate {
         token,
       );
       // #956: claim tokens must never authenticate general API requests.
-      if (payload.type !== 'api' || payload.type === 'claim') {
+      if (payload.type === 'claim' || payload.type !== 'api') {
         throw new UnauthorizedException();
       }
     } catch {
