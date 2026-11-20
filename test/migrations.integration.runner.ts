@@ -226,13 +226,27 @@ async function main(): Promise<void> {
     const executedMigrations = await dataSource.runMigrations();
     const executedMigrationNames = executedMigrations.map(({ name }) => name);
 
-    // Issue #723: assert the pinned order, not just the final schema. A
+    // Issue #723/#948: assert the pinned order, not just the final schema. A
     // reordering can leave the end state identical while changing what runs
-    // first against real data.
+    // first against real data. The three 1718100008000-prefixed migrations in
+    // particular must execute in deterministic filename order.
     const appliedOrderMatchesPinned =
       executedMigrationNames.length === pinnedMigrationOrder.length &&
       executedMigrationNames.every(
         (name, index) => name === pinnedMigrationOrder[index],
+      );
+    const eightKPrefixOrder = executedMigrationNames.filter((name) =>
+      name.includes('1718100008000'),
+    );
+    const expectedEightKPrefixOrder = [
+      'AddDeletedAtToAccountsTable1718100008000',
+      'AddPartialSweepToAccountStatus1718100008000',
+      'CreateClaimAuditLogTable1718100008000',
+    ];
+    const eightKOrderMatches =
+      eightKPrefixOrder.length === expectedEightKPrefixOrder.length &&
+      eightKPrefixOrder.every(
+        (name, index) => name === expectedEightKPrefixOrder[index],
       );
 
     const schemaUpQueries = await readSchemaUpQueries(dataSource);
@@ -483,6 +497,7 @@ async function main(): Promise<void> {
         enumValues,
         executedMigrationNames,
         appliedOrderMatchesPinned,
+        eightKOrderMatches,
         pinnedMigrationOrder,
         foreignKeyColumns,
         foreignKeyRejected,
@@ -521,6 +536,12 @@ async function main(): Promise<void> {
         `Migrations did not apply in the pinned order (#723). ` +
           `applied=${JSON.stringify(executedMigrationNames)} ` +
           `pinned=${JSON.stringify(pinnedMigrationOrder)}`,
+      );
+    }
+
+    if (!eightKOrderMatches) {
+      failures.push(
+        'The 1718100008000-prefixed migrations did not execute in deterministic filename order (#948).',
       );
     }
 
