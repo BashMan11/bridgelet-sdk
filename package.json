@@ -32,7 +32,9 @@
     "test:migrations": "node --loader ts-node/esm test/migrations.integration.runner.ts",
     "test:claim-lookup-index": "node --loader ts-node/esm test/claim-lookup-index.runner.ts",
     "check:stellar-sdk-pin": "node scripts/check-stellar-sdk-pin.cjs",
-    "test:mutation": "stryker run"
+    "check:embedded-postgres-types:ci": "node scripts/check-embedded-postgres-types.cjs",
+    "test:mutation": "stryker run",
+    "test:mutation:high-risk": "stryker run stryker.crypto.conf.json && stryker run stryker.sweeps.conf.json"
   },
   "dependencies": {
     "@aws-sdk/client-kms": "3.1075.0",
