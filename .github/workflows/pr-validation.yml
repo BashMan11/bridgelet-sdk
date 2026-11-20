@@ -17,6 +17,7 @@ jobs:
       ENFORCEMENT_START_DATE: '2026-02-27'
       BRANCH_REGEX: '^(fix|feature|feat|test|chore|docs|refactor|ref|hotfix|release|ci|build|revert)/[a-z0-9-]+$'
       TITLE_REGEX: '^(fix|feature|feat|test|chore|docs|refactor|ref|hotfix|release|ci|build|revert): .+$'
+      IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
 
     steps:
       - name: Validate branch and PR title
@@ -36,7 +37,7 @@ jobs:
           BRANCH_VALID=true
           TITLE_VALID=true
 
-          if [[ "$BRANCH_NAME" != "main" && "$BRANCH_NAME" != "develop" ]]; then
+          if [[ "$IS_FORK" == false && "$BRANCH_NAME" != "main" && "$BRANCH_NAME" != "develop" ]]; then
             if [[ ! "${BRANCH_NAME,,}" =~ $BRANCH_REGEX ]]; then
               BRANCH_VALID=false
             fi
