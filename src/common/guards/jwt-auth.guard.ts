@@ -23,7 +23,8 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync<{ type?: string }>(
         token,
       );
-      if (payload.type !== 'api') {
+      // #956: claim tokens must never authenticate general API requests.
+      if (payload.type !== 'api' || payload.type === 'claim') {
         throw new UnauthorizedException();
       }
     } catch {
