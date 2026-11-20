@@ -424,6 +424,14 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
  * • FK lookup (claims JOIN accounts ON "accountId") — covered by
  *   IDX_claims_accountId from 1718100001000-CreateClaimsTable.
  *
+ * Related indexes added later
+ * ───────────────────────────
+ * This migration only creates the three indexes above. The complete
+ * accounts index → query map lives in docs/database-schema.md →
+ * "Database Indexes → accounts". Keep that table up to date when adding an
+ * index in a later migration — for example IDX_accounts_reclamation from
+ * 1718100011000-AddAccountReclamation, which serves the reclamation job.
+ *
  * All indexes use the default B-tree access method, which PostgreSQL can
  * use for equality, range (<, >), and ORDER BY optimisation.
  *
