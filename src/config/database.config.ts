@@ -48,9 +48,8 @@ export default registerAs(
       database: process.env.DATABASE_NAME || 'bridgelet',
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
-      // synchronize: isSynchronizeAllowed(),
-      // use the util later before production
-      synchronize: true,
+      // #951: never auto-sync schema outside test environments; use migrations.
+      synchronize: process.env.NODE_ENV === 'test',
       autoLoadEntities: true,
       logging: process.env.DATABASE_LOGGING === 'true',
       ssl:
