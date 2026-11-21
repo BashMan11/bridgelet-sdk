@@ -4,6 +4,7 @@ import { dirname } from 'path';
 import { DataSource } from 'typeorm';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
+import { POOL_CONFIG } from './database-pool.util.js';
 
 /**
  * Connection pool rationale (issue #516)
@@ -29,13 +30,10 @@ import 'dotenv/config';
  *
  * The `extra` key is passed verbatim to the underlying `pg` Pool constructor,
  * which is how TypeORM exposes driver-specific pool configuration for Postgres.
+ *
+ * The values themselves live in `database-pool.util.ts` (issue #1046) so the
+ * sizing contract can be unit-tested without importing this ESM-only module.
  */
-const POOL_CONFIG = {
-  min: 2,
-  max: 10,
-  connectionTimeoutMillis: 3000,
-} as const;
-
 export default registerAs(
   'database',
   (): { database: TypeOrmModuleOptions } => ({

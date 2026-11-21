@@ -219,15 +219,27 @@ the trustline. `TESTNET_ASSET` defaults to Circle testnet USDC and accepts any
 
 ### Load testing and connection pool sizing
 
-Each app instance opens at most **10** PostgreSQL connections (`POOL_CONFIG.max` in `src/config/database.config.ts`), and a caller that cannot get a connection within **3s** (`connectionTimeoutMillis`) fails fast rather than hanging.
+The account-creation load profile is **50 concurrent `POST /accounts` requests against one instance**. Each app instance opens at most **10** PostgreSQL connections (`POOL_CONFIG.max` in `src/config/database-pool.util.ts`), so up to 10 database queries run at once and the remaining requests queue briefly in the pool. This is expected: `POST /accounts` holds a connection only for its short database work, so the 10-connection pool drains the 50-request burst well within the **3s** `connectionTimeoutMillis` wait. If you see `timeout exceeded when trying to connect`, the pool is saturated for too long: raise `max` or scale out instances.
 
-When load testing (e.g. 50 concurrent `POST /accounts` requests against one instance), requests beyond the 10 in-flight queries queue in the pool. That is expected: each request holds a connection only briefly, so the queue drains well within the 3s timeout at this concurrency. If you see `timeout exceeded when trying to connect` under load, raise `max` or scale out instances. Don't set `max` so high that the total stops fitting on the server:
+Pool size is **per app instance**, not request concurrency. Keep total physical connections below Postgres's `max_connections` (`SHOW max_connections;`, commonly 100):
 
 ```
-instances × POOL_CONFIG.max  +  migration/CLI pools  +  other services  <  Postgres max_connections (default 100)
+(app instances × POOL_CONFIG.max)
+  + (concurrent migration/CLI pools × POOL_CONFIG.max)
+  + connections held by other services
+  < Postgres max_connections
 ```
 
-See `docs/deployment.md` for multi-instance sizing guidance.
+Worked example with the default `max_connections = 100` and `max = 10`:
+
+- 4 app instances: 40 connections.
+- 1 concurrent migration/CLI pool: +10.
+- 10 connections reserved for other services: +10.
+- Total: 60, leaving 40 connections of headroom.
+
+With those reservations, up to 7 app instances fit (70 + 10 + 10 = 90). 2-4 instances is the recommended starting range; beyond that, lower `max` per instance or put PgBouncer in transaction mode in front of Postgres so connections do not multiply linearly.
+
+See `docs/deployment.md` for the full rationale, including the `min` and `connectionTimeoutMillis` semantics.
 
 ## Environment Variables
 
