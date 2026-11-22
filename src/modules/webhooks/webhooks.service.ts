@@ -226,7 +226,13 @@ export class WebhooksService {
 
     // #1067: persist the outcome so the WebhookDelivery fields documented in
     // docs/webhook-events.md are queryable by integrators and support staff.
-    await this.recordDelivery(webhook, eventType, body, responseCode, responseBody);
+    await this.recordDelivery(
+      webhook,
+      eventType,
+      body,
+      responseCode,
+      responseBody,
+    );
 
     try {
       await this.webhookRepository.update(webhook.id, {
